@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 public class UI_script : MonoBehaviour {
 
+    // ссылка на себя, типа как синглтон, но это чтобы не искать его в других скриптах
     public static UI_script Instance { get; private set; }
 
     public Transform ship_1_UI;
