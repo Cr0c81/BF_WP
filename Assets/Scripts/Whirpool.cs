@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class Whirpool : MonoBehaviour {
 
@@ -30,6 +31,8 @@ public class Whirpool : MonoBehaviour {
     [Tooltip("Пустышка с прицелом")]
     public Transform tr_aim;
     public Transform tr_canvas_aim;
+    private bool isAiming = false;
+    public Image _aim;
 
     private enum Enum_control
     {
@@ -100,6 +103,7 @@ public class Whirpool : MonoBehaviour {
         {
             if (Input.GetMouseButton(1))
             {
+                isAiming = true;
                 RaycastHit rh;
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 LayerMask lm = LayerMask.GetMask( "whirpool" );
@@ -110,8 +114,16 @@ public class Whirpool : MonoBehaviour {
                     //float angleA = Vector3.Angle(ship1.tr.forward, ship1.tr.position - v1);
                     //Quaternion q = Quaternion.LookRotation(ship1.tr.position - v1, Vector3.up);
                     //tr_canvas_aim.rotation = q;
-                    tr_canvas_aim.forward = v1 - ship1.tr.position;
+                    tr_canvas_aim.LookAt(v1);
                 }
+                _aim.fillAmount -= 0.125f * Time.deltaTime;
+                _aim.fillAmount = Mathf.Clamp(_aim.fillAmount, 0.03f, 1f);
+            } else if (isAiming)
+            {
+                isAiming = false;
+                float aimSector = _aim.fillAmount;
+                // выстрел
+                _aim.fillAmount = 0.125f;
             }
         }
     }
