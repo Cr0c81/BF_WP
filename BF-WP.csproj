@@ -91,6 +91,7 @@
     <Compile Include="Assets\Scripts\ShipData.cs" />
     <Compile Include="Assets\Scripts\UI_script.cs" />
     <Compile Include="Assets\Scripts\Whirpool.cs" />
+    <Compile Include="Assets\Scripts\_CustomInput.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\Alpha-VertexLit.shader" />

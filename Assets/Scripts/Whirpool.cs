@@ -31,13 +31,21 @@ public class Whirpool : MonoBehaviour {
     [Tooltip("Прицело")]
     public Transform tr_aim;
     public Transform tr_canvas_aim;
+    [Tooltip("Идет ли прицеливание")]
     private bool isAiming = false;
+    [Tooltip("Спрайт левой части прицела")]
     public Image _aim_left;
+    [Tooltip("Спрайт правой части прицела")]
     public Image _aim_right;
+    [Tooltip("Цвет прицела в начале")]
     public Color aim_color_start;
+    [Tooltip("Цвет прицела в конце")]
     public Color aim_color_end;
+    [Tooltip("Размер сектора прицела в начале")]
     public float aim_size_start = 0.075f;
+    [Tooltip("Размер сектора прицела в конце")]
     public float aim_size_end = 0.01f;
+    [Tooltip("Время сведения")]
     public float aim_time = 2f;
 
     private enum Enum_control
@@ -46,6 +54,8 @@ public class Whirpool : MonoBehaviour {
         accelerate = 1,
         brake = 2
     }
+    // ссылка на контроллер ввода
+    private _CustomInput input;
 
 #region постоянный сдвиг UV текстуры воды
     [Header("Ссылки и настройки сдвига UV фона")]
@@ -75,18 +85,14 @@ public class Whirpool : MonoBehaviour {
     }
 #endregion
 
-    void Awake(){
+    void Awake()
+    {
         if (!Instance) Instance = this;
         ship1 = GameObject.FindGameObjectWithTag("ship_player").GetComponent<Ship>().data;
         ship2 = GameObject.FindGameObjectWithTag("ship_enemy").GetComponent<Ship>().data;
         _aim_left.enabled = false;
         _aim_right.enabled = false;
-    }
-    //void OnEnable(){}
-    //void OnDisable(){}
-    //void OnDestroy(){}
-    //void OnGUI(){}
-    void Start () {
+        input = _CustomInput.Instance;
     }
 
     void Update () {
@@ -109,13 +115,13 @@ public class Whirpool : MonoBehaviour {
 
         if (ship_move == Enum_control.none)
         {
-            if (Input.GetMouseButton(1))
+            if (input.isClick)
             {
                 isAiming = true;
                 _aim_left.enabled = true;
                 _aim_right.enabled = true;
                 RaycastHit rh;
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                Ray ray = Camera.main.ScreenPointToRay(input.position);
                 LayerMask lm = LayerMask.GetMask( "whirpool" );
                 if (Physics.Raycast(ray,out rh, 100f, lm))
                 {
