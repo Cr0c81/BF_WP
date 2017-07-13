@@ -35,7 +35,8 @@ public class Weapon_config_class
 public enum WeaponSwitchDrawing
 {
     coloring = 0,  // раскраска фона
-    bordering = 1  // включение рамок
+    bordering = 1, // включение рамок
+    color_border = 2 // рамки с раскраской
 }
 
 public class UI_script : MonoBehaviour {
@@ -104,6 +105,16 @@ public class UI_script : MonoBehaviour {
                     {
                         weapon_config.bgs_borders[old_wpn].enabled = false;
                     }
+                    weapon_config.bgs_borders[value].enabled = true;
+                    break;
+                }
+            case WeaponSwitchDrawing.color_border:
+                {
+                    if (old_wpn != -1)
+                    {
+                        weapon_config.bgs_borders[old_wpn].enabled = false;
+                    }
+                    weapon_config.bgs_borders[value].color = weapon_config.color_active;
                     weapon_config.bgs_borders[value].enabled = true;
                     break;
                 }
