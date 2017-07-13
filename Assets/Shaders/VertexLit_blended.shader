@@ -11,11 +11,12 @@ Properties {
 }
 
 Category {
-	Tags { "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" "PreviewType"="Plane" }
-	Blend SrcAlpha OneMinusSrcAlpha
-	Cull Off ZWrite Off
-	
-	Lighting On
+	Tags { "Queue"="Transparent" }
+//	Tags { "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" "PreviewType"="Plane" }
+//	Blend SrcAlpha OneMinusSrcAlpha
+//	Cull Off
+//	ZWrite On
+//	Lighting On
 	Material { Emission [_EmisColor] }
 	ColorMaterial AmbientAndDiffuse
 
