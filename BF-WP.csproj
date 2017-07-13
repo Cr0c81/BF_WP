@@ -87,6 +87,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Bullet.cs" />
     <Compile Include="Assets\Scripts\Ship.cs" />
     <Compile Include="Assets\Scripts\ShipData.cs" />
     <Compile Include="Assets\Scripts\UI_script.cs" />
@@ -99,6 +100,7 @@
     <None Include="Assets\Shaders\VertexLit_blended.shader" />
     <None Include="Assets\Shaders\rgb_splat.shader" />
     <None Include="Assets\Shaders\rgb_splat_partial.shader" />
+    <None Include="Assets\Shaders\rgb_splat_partial_2mask.shader" />
     <None Include="Assets\Shaders\water_simple\WaterBlended.shader" />
     <None Include="Assets\Shaders\water_simple\WaterBlendedSpecular.shader" />
     <None Include="Assets\Shaders\water_simple\WaterSimple.shader" />
