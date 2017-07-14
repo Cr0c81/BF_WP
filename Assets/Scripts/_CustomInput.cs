@@ -22,7 +22,7 @@ public class _CustomInput : MonoBehaviour {
     {
         get {
 #if UNITY_ANDROID || UNITY_IOS
-            return Input.touchCount > 0;
+            return (Input.touchCount > 0 ? (Input.touches[0].phase != TouchPhase.Ended) : false );
 #else
             return Input.GetMouseButton(0);
 #endif
