@@ -88,9 +88,6 @@ public class WeaponData : MonoBehaviour {
     void Start()
     {
         Instance = this;
-        aim_left.enabled = false;
-        aim_right.enabled = false;
-        aim_mortar.enabled = false;
     }
     #endregion
     public bool debug_aim = false;
@@ -101,175 +98,154 @@ public class WeaponData : MonoBehaviour {
     [Header("Разное")]
     public GameObject bullet;
 
-    [Header("Прицел - общее")]
-    [Tooltip("Цвет прицела в начале")]
-    public Color aim_color_start;
-    [Tooltip("Цвет прицела в конце")]
-    public Color aim_color_end;
 
-    [Header("Прицел - тип CANNON")]
-    [Tooltip("Трансформ прицела пушки")]
-    public Transform tr_aim;
-    public Transform tr_canvas_aim;
-    [Tooltip("Спрайт левой части прицела пушки")]
-    public Image aim_left;
-    [Tooltip("Спрайт правой части прицела пушки")]
-    public Image aim_right;
-
-    [Header("Прицел - тип MORTAR")]
-    [Tooltip("Трансформ прицела")]
-    public Transform tr_mortar_aim;
-    [Tooltip("Картинка прицела")]
-    public Image aim_mortar;
-    [Tooltip("Поднятие над точкой прицела")]
-    public float mortar_aim_overhead = 0.01f;
-    [Tooltip("Вращение прицела при сведении")]
-    public bool canRotate = true;
-    [Tooltip("Скорость вращения прицела")]
-    public float rotateSpeed = 0.5f;
-
-    private int cid;
     private Vector3 aim_point;
     private float timer;
 
-    public void StartAiming(int _cID, Vector3 _pos)
+    public void StartAiming(ShipData _sd, Vector3 _pos)
     {
-        cid = _cID;
         timer = 0f;
-        switch (cannons[cid].aimType)
+        switch (cannons[_sd.cannonID].aimType)
         {
             case AimType.Cannon:
             {
-                aim_left.enabled = true;
-                aim_right.enabled = true;
-                aim_left.fillAmount = cannons[cid].maxAim;
-                aim_right.fillAmount = aim_left.fillAmount;
-                _pos.y = tr_canvas_aim.position.y;
-                tr_canvas_aim.LookAt(_pos);
+                _sd.aim_left.enabled = true;
+                _sd.aim_right.enabled = true;
+                _sd.aim_left.fillAmount = cannons[_sd.cannonID].maxAim;
+                _sd.aim_right.fillAmount = _sd.aim_left.fillAmount;
+                _pos.y = _sd.tr_canvas_aim.position.y;
+                _sd.tr_canvas_aim.LookAt(_pos);
                 aim_point = _pos;
                 break;
             }
             case AimType.Mortar:
             {
-                tr_mortar_aim.position = _pos + new Vector3(0f, mortar_aim_overhead, 0f);
-                aim_mortar.enabled = true;
-                tr_mortar_aim.localScale = Vector3.one * cannons[cid].maxAim;
+                _sd.tr_mortar_aim.position = _pos + new Vector3(0f, _sd.mortar_aim_overhead, 0f);
+                _sd.aim_mortar.enabled = true;
+                _sd.tr_mortar_aim.localScale = Vector3.one * cannons[_sd.cannonID].maxAim;
                 break;
             }
         }
-        if (!cannons[cid].hasMaxAngle)
+        if (!cannons[_sd.cannonID].hasMaxAngle)
         {
-            aim_left.color = aim_color_end;
-            aim_right.color = aim_left.color;
+            _sd.aim_left.color = _sd.aim_color_end;
+            _sd.aim_right.color = _sd.aim_left.color;
         }
     }
 
-    public void ProcessAiming(Vector3 _pos)
+    public void ProcessAiming(ShipData _sd, Vector3 _pos)
     {
-        timer = Mathf.Clamp(timer + Time.deltaTime, 0f, cannons[cid].aimTime);
+        timer = Mathf.Clamp(timer + Time.deltaTime, 0f, cannons[_sd.cannonID].aimTime);
         
-        switch (cannons[cid].aimType)
+        switch (cannons[_sd.cannonID].aimType)
         {
             case AimType.Cannon:
             {
-                if (cannons[cid].hasMaxAngle)
+                if (cannons[_sd.cannonID].hasMaxAngle)
                 {
-                    aim_left.fillAmount = Mathf.Lerp(cannons[cid].maxAim, cannons[cid].minAim, (timer / cannons[cid].aimTime));
-                    aim_right.fillAmount = aim_left.fillAmount;
+                    _sd.aim_left.fillAmount = Mathf.Lerp(cannons[_sd.cannonID].maxAim, cannons[_sd.cannonID].minAim, (timer / cannons[_sd.cannonID].aimTime));
+                    _sd.aim_right.fillAmount = _sd.aim_left.fillAmount;
                 }
-                _pos.y = tr_canvas_aim.position.y;
-                if (cannons[cid].isTrackable)
+                _pos.y = _sd.tr_canvas_aim.position.y;
+                if (cannons[_sd.cannonID].isTrackable)
                 {
-                    tr_canvas_aim.LookAt(_pos);
+                     _sd.tr_canvas_aim.LookAt(_pos);
                 }
                 else
                 {
-                    tr_canvas_aim.LookAt(aim_point);
+                     _sd.tr_canvas_aim.LookAt(aim_point);
                 }
-                if (cannons[cid].hasMaxAngle)
+                if (cannons[_sd.cannonID].hasMaxAngle)
                 {
-                    aim_left.color = Color.Lerp(aim_color_end, aim_color_start,
-                        (aim_left.fillAmount - cannons[cid].minAim) / (cannons[cid].maxAim - cannons[cid].minAim));
-                    aim_right.color = aim_left.color;
+                     _sd.aim_left.color = Color.Lerp(_sd.aim_color_end, _sd.aim_color_start,
+                        (_sd.aim_left.fillAmount - cannons[_sd.cannonID].minAim) / (cannons[_sd.cannonID].maxAim - cannons[_sd.cannonID].minAim));
+                     _sd.aim_right.color = _sd.aim_left.color;
                 }
                 break;
             }
             case AimType.Mortar:
             {
-                if (cannons[cid].hasMaxAngle)
+                if (cannons[_sd.cannonID].hasMaxAngle)
                 {
-                    if (cannons[cid].hasMaxAngle)
+                    if (cannons[_sd.cannonID].hasMaxAngle)
                     {
-                        tr_mortar_aim.localScale = Mathf.Lerp(cannons[cid].maxAim, cannons[cid].minAim, (timer / cannons[cid].aimTime)) * Vector3.one;
-                        aim_mortar.color = Color.Lerp(aim_color_start, aim_color_end, timer / cannons[cid].aimTime);
+                        _sd.tr_mortar_aim.localScale = Mathf.Lerp(cannons[_sd.cannonID].maxAim, cannons[_sd.cannonID].minAim, (timer / cannons[_sd.cannonID].aimTime)) * Vector3.one;
+                        _sd.aim_mortar.color = Color.Lerp(_sd.aim_color_start, _sd.aim_color_end, timer / cannons[_sd.cannonID].aimTime);
                     }
                 }
-                if (cannons[cid].isTrackable)
+                if (cannons[_sd.cannonID].isTrackable)
                     {
-                        tr_mortar_aim.position = _pos + new Vector3(0f, mortar_aim_overhead, 0f);
+                        _sd.tr_mortar_aim.position = _pos + new Vector3(0f, _sd.mortar_aim_overhead, 0f);
                     }
-                if (canRotate)
+                if (_sd.canRotate)
                     {
-                        tr_mortar_aim.Rotate(Vector3.up, rotateSpeed * Time.deltaTime, Space.World);
+                    _sd.tr_mortar_aim.Rotate(Vector3.up, _sd.rotateSpeed * Time.deltaTime, Space.World);
                     }
                 break;
             }
         }
     }
 
-    public void EndAiming(Vector3 _pos)
+    public void EndAiming(ShipData _sd, Vector3 _pos)
     {
         float aim_value = 0f;
-        switch (cannons[cid].aimType)
+        switch (cannons[_sd.cannonID].aimType)
         {
             case AimType.Cannon:
             {
-                aim_left.enabled = debug_aim;
-                aim_right.enabled = debug_aim;
-                aim_value = aim_right.fillAmount * 360f;
+                _sd.aim_left.enabled = debug_aim;
+                _sd.aim_right.enabled = debug_aim;
+                aim_value = _sd.aim_right.fillAmount * 360f;
                 break;
             }
             case AimType.Mortar:
             {
-                aim_mortar.enabled = debug_aim;
-                aim_value = tr_mortar_aim.localScale.x;
+                 _sd.aim_mortar.enabled = debug_aim;
+                aim_value = _sd.tr_mortar_aim.localScale.x;
                 break;
             }
         }
-        DamnShootEm(_pos, aim_value);
+        DamnShootEm(_sd, _pos, aim_value);
     }
 
-    public void DamnShootEm(Vector3 _pos, float _aim_value)
+    public void DamnShootEm(ShipData _sd, Vector3 _pos, float _aim_value)
     {
-        Vector3 cannon = Whirpool.Instance.ship1.tr_cannon.position;
-        Vector3 cannon_dir = Whirpool.Instance.ship1.tr_cannon.forward;
+        Vector3 cannon = _sd.tr_cannon.position;
+        Vector3 cannon_dir =_sd.tr_cannon.forward;
 
-        switch (cannons[cid].anima)
+        switch (cannons[_sd.cannonID].anima)
         {
             case ShootAnimation.Linear:
                 {
                     GameObject go = (GameObject)Instantiate(bullet, cannon, Quaternion.identity);
-                    go.transform.position = Whirpool.Instance.ship1.tr_cannon.position;
-                    Vector3 dir = _pos - Whirpool.Instance.ship1.tr_cannon.position;
+                    go.transform.position = _sd.tr_cannon.position;
+                    Vector3 dir = _pos - _sd.tr_cannon.position;
                     dir.y = 0f;
                     dir.Normalize();
                     go.transform.forward = dir;
                     go.transform.Rotate(Vector3.up, Random.Range(-_aim_value/2f, _aim_value), Space.World);
-                    go.GetComponent<Rigidbody>().velocity = go.transform.forward * ammos[cannons[cid].ammoType].velocity;
-                    go.GetComponent<Bullet>().ammoID = cannons[cid].ammoType;
-                    go.GetComponent<Bullet>().parent = Whirpool.Instance.ship1.tr_ship;
-                    Whirpool.Instance.ship1.ReloadCannon();
+                    go.GetComponent<Rigidbody>().velocity = go.transform.forward * ammos[cannons[_sd.cannonID].ammoType].velocity;
+                    go.GetComponent<Bullet>().ammoID = cannons[_sd.cannonID].ammoType;
+                    go.GetComponent<Bullet>().SetParams(Vector3.zero, 0f, 0f, 0f, _sd.tr_ship.parent); // здесь только парент нужен
+                    _sd.ReloadCannon();
                     break;
                 }
             case ShootAnimation.Ballistic:
                 {
-                    Whirpool.Instance.ship1.ReloadCannon();
+                    GameObject go = (GameObject)Instantiate(bullet, cannon, Quaternion.identity);
+                    go.transform.position = _sd.tr_cannon.position;
+                    go.GetComponent<Bullet>().ammoID = cannons[_sd.cannonID].ammoType;
+                    float dist = (_pos - cannon).magnitude;
+                    go.GetComponent<Bullet>().SetParams((_pos - cannon), dist, dist/ammos[cannons[_sd.cannonID].ammoType].velocity, 4f, _sd.tr_ship.parent); // а здесь всё нужно
+                    _sd.ReloadCannon();
                     break;
                 }
             case ShootAnimation.Momental:
                 {
-                    Whirpool.Instance.ship2.Damage(cannons[cid].ammoType);
-                    Whirpool.Instance.ship1.ReloadCannon();
+                    //Whirpool.Instance.ship2.SetDamage(cannons[_sd.cannonID].ammoType);
+                    foreach (ShipData s in Whirpool.Instance.ships)
+                        if (s != _sd) s.SetDamage(cannons[_sd.cannonID].ammoType);
+                    _sd.ReloadCannon();
                     break;
                 }
         }

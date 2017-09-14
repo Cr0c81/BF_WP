@@ -5,18 +5,12 @@ using UnityEngine.UI;
 [System.Serializable]
 public class Panel_health_config
 {
-    public Transform ship_1_UI;
-    public Transform ship_2_UI;
-    public RectTransform panel_ship1;
-    public Image img_reload1;
-    public Image img_body1;
-    public Image img_team1;
-    public Image img_ctrl1;
-    public RectTransform panel_ship2;
-    public Image img_reload2;
-    public Image img_body2;
-    public Image img_team2;
-    public Image img_ctrl2;
+    public Transform ship_UI;
+    public RectTransform panel_ship;
+    public Image img_reload;
+    public Image img_body;
+    public Image img_team;
+    public Image img_ctrl;
 }
 
 [System.Serializable]
@@ -43,12 +37,14 @@ public enum WeaponSwitchDrawing
 
 public class UI_script : MonoBehaviour {
 
-    // ссылка на себя, типа как синглтон, но это чтобы не искать его в других скриптах
-    public static UI_script Instance { get; private set; }
+// ссылка на себя, типа как синглтон, но это чтобы не искать его в других скриптах
+public static UI_script Instance { get; private set; }
 
 #region панели здоровья
     [Header("Панели здоровья кораблей")]
-    public Panel_health_config panel_health;
+    public Panel_health_config[] panel_health;
+    public Transform canvas_panel_holder;
+    public GameObject prefab_panel;
     public enum ShipParent
     {
         Player = 0,
@@ -60,27 +56,27 @@ public class UI_script : MonoBehaviour {
         Team = 1,
         Control = 2
     }
-    public void SetHealthShip(ShipParent sp, ShipData sd)
+    public void SetHealthShip(int index, ShipData sd)
     {
-        switch (sp)
+        panel_health[index].img_reload.fillAmount = sd.cannonReloadTimer / sd.maxReloadTime;
+        panel_health[index].img_body.fillAmount = sd.health_body / sd.health_body_max;
+        panel_health[index].img_team.fillAmount = sd.health_team / sd.health_team_max;
+        panel_health[index].img_ctrl.fillAmount = sd.health_control / sd.health_control_max;
+    }
+
+    public void InitPanels()
+    {
+        panel_health = new Panel_health_config[Whirpool.Instance.ships.Length];
+        for (int i=0; i<Whirpool.Instance.ships.Length; i++)
         {
-            case ShipParent.Player:
-            {
-                    panel_health.img_reload1.fillAmount = sd.cannonReloadTimer / sd.maxReloadTime;
-                    panel_health.img_body1.fillAmount = sd.health_body / sd.health_body_max;
-                    panel_health.img_team1.fillAmount = sd.health_team / sd.health_team_max;
-                    panel_health.img_ctrl1.fillAmount = sd.health_control / sd.health_control_max;
-                return;
-            }
-            case ShipParent.Enemy:
-            {
-                    panel_health.img_reload2.fillAmount = sd.cannonReloadTimer / sd.maxReloadTime;
-                    panel_health.img_body2.fillAmount = sd.health_body / sd.health_body_max;
-                    panel_health.img_team2.fillAmount = sd.health_team / sd.health_team_max;
-                    panel_health.img_ctrl2.fillAmount = sd.health_control / sd.health_control_max;
-                return;
-                }
-            default: return;
+            GameObject go = Instantiate<GameObject>(prefab_panel, canvas_panel_holder);
+            panel_health[i] = new Panel_health_config();
+            panel_health[i].panel_ship = go.GetComponent< RectTransform>();
+            panel_health[i].ship_UI = Whirpool.Instance.ships[i].UI_ship;
+            panel_health[i].img_reload = go.transform.GetChild(0).GetComponent<Image>();
+            panel_health[i].img_body = go.transform.GetChild(1).GetComponent<Image>();
+            panel_health[i].img_team= go.transform.GetChild(2).GetComponent<Image>();
+            panel_health[i].img_ctrl= go.transform.GetChild(3).GetComponent<Image>();
         }
     }
     #endregion
@@ -123,9 +119,9 @@ public class UI_script : MonoBehaviour {
                 }
         }
         old_wpn = value;
-        Whirpool.Instance.ship1.cannonID = value;
-        Whirpool.Instance.ship1.SwitchCannon(value);
-        Whirpool.Instance.ship1.ReloadCannon();
+        Whirpool.Instance.ships[0].cannonID = value;
+        Whirpool.Instance.ships[0].SwitchCannon(value);
+        Whirpool.Instance.ships[0].ReloadCannon();
     }
 
 #endregion
@@ -133,8 +129,8 @@ public class UI_script : MonoBehaviour {
 #region методы монобеха
     void Update()
     {
-        panel_health.panel_ship1.position = Camera.main.WorldToScreenPoint(panel_health.ship_1_UI.position);
-        panel_health.panel_ship2.position = Camera.main.WorldToScreenPoint(panel_health.ship_2_UI.position);
+        panel_health[0].panel_ship.position = Camera.main.WorldToScreenPoint(panel_health[0].ship_UI.position);
+        panel_health[1].panel_ship.position = Camera.main.WorldToScreenPoint(panel_health[1].ship_UI.position);
     }
 
     void Start()

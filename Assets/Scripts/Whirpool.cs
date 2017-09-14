@@ -15,14 +15,10 @@ public class Whirpool : MonoBehaviour {
     [Header("Ссылки на корабли")]
     public Material mat_ship_red;
     public Material mat_ship_blue;
-    [Tooltip("Трансформ вращения корабля #1")]
-    public Transform tr_ship1;
-    [Tooltip("Данные корабля #1")]
-    public ShipData ship1;
-    [Tooltip("Трансформ вращения корабля #2")]
-    public Transform tr_ship2;
-    [Tooltip("Данные корабля #2")]
-    public ShipData ship2;
+    [Tooltip("Трансформы вращения корабля")]
+    public Transform[] tr_ships;
+    [Tooltip("Данные кораблей")]
+    public ShipData[] ships;
     [Header("Состояния корабля")]
     [SerializeField]
     [Tooltip("Енум управления газ/тормоз/ничего")]
@@ -68,12 +64,30 @@ public class Whirpool : MonoBehaviour {
     }
 #endregion
 
-   void Awake()
+    void Awake()
     {
         Instance = this;
-        ship1 = GameObject.FindGameObjectWithTag("ship_player").GetComponent<Ship>().data;
-        ship2 = GameObject.FindGameObjectWithTag("ship_enemy").GetComponent<Ship>().data;
+        GameObject[] s = GameObject.FindGameObjectsWithTag("ship");
+        ships = new ShipData[s.Length];
+        tr_ships = new Transform[s.Length];
+        for (int i = 0; i < s.Length; i++)
+        {
+            s[i].GetComponent<Ship>().InitShip();
+            ships[i] = s[i].GetComponent<Ship>().data;
+            tr_ships[i] = s[i].transform.parent.parent;
+        }
         input = _CustomInput.Instance;
+
+        if (ships[1].playerControlled)
+        {
+            ShipData t = ships[0];
+            ships[0] = ships[1];
+            ships[1] = t;
+            Transform tt = tr_ships[0];
+            tr_ships[0] = tr_ships[1];
+            tr_ships[1] = tt;
+        }
+        UI_script.Instance.InitPanels();
     }
     void Start()
     {
@@ -86,28 +100,28 @@ public class Whirpool : MonoBehaviour {
         //WaterRotate();
 
         // отдаём время в корабли, чтобы таймеры перезарядки и переключения работали
-        ship1.ProcessTimers(Time.deltaTime);
-        ship2.ProcessTimers(Time.deltaTime);
+        ships[0].ProcessTimers(Time.deltaTime);
+        ships[1].ProcessTimers(Time.deltaTime);
         // ------------------
 
         float player_move = 0f;
-        float player_angle = Vector3.Dot(ship1.tr_ship.position - tr_whirpool.position, ship2.tr_ship.position - tr_whirpool.position);
-        if (ship_move == Enum_control.accelerate) player_move = ship1.accelerate;
-        if (ship_move == Enum_control.brake) player_move = -ship1.brake;
+        float player_angle = Vector3.Dot(ships[0].tr_ship.position - tr_whirpool.position, ships[1].tr_ship.position - tr_whirpool.position);
+        if (ship_move == Enum_control.accelerate) player_move = ships[0].accelerate;
+        if (ship_move == Enum_control.brake) player_move = -ships[0].brake;
         if (ship_move != Enum_control.none)
         {
-            Vector3 v1 = ship1.tr_ship.position - tr_whirpool.position;
-            Vector3 v2 = ship2.tr_ship.position - tr_whirpool.position;
+            Vector3 v1 = ships[0].tr_ship.position - tr_whirpool.position;
+            Vector3 v2 = ships[1].tr_ship.position - tr_whirpool.position;
             player_angle = Vector3.Angle(v1, v2);
             if ( player_angle < 0 ) player_move = 0f;
         }
         tr_whirpool.Rotate(Vector3.up, speed_whirpool * Time.deltaTime, Space.World);
-        tr_ship1.Rotate(Vector3.up, (speed_whirpool - ship1.speed + player_move) * Time.deltaTime, Space.World);
-        tr_ship2.Rotate(Vector3.up, (speed_whirpool - ship2.speed) * Time.deltaTime, Space.World);
+        tr_ships[0].Rotate(Vector3.up, (speed_whirpool - ships[0].speed + player_move) * Time.deltaTime, Space.World);
+        tr_ships[1].Rotate(Vector3.up, (speed_whirpool - ships[1].speed) * Time.deltaTime, Space.World);
 
         if (ship_move == Enum_control.none)
         {
-            if ( input.isClick && !(ship1.cannonReload || ship1.cannonSwitch) && !EventSystem.current.IsPointerOverGameObject() /* */)
+            if ( input.isClick && !(ships[0].cannonReload || ships[0].cannonSwitch) && !EventSystem.current.IsPointerOverGameObject() /* */)
                 
             {
                 if (!isAiming)
@@ -119,7 +133,7 @@ public class Whirpool : MonoBehaviour {
                     if (CustomRaycast(ray, out rh, lm))
                     {
                         Vector3 v1 = rh.point;
-                        WeaponData.Instance.StartAiming(ship1.cannonID, v1);
+                        WeaponData.Instance.StartAiming(ships[0], v1);
                     }
                 } else
                 {
@@ -129,7 +143,7 @@ public class Whirpool : MonoBehaviour {
                     if (CustomRaycast(ray, out rh, lm))
                     {
                         Vector3 v1 = rh.point;
-                        WeaponData.Instance.ProcessAiming(v1);
+                        WeaponData.Instance.ProcessAiming(ships[0], v1);
                         last_pos = v1;
                     }
                 }
@@ -137,38 +151,34 @@ public class Whirpool : MonoBehaviour {
             else if (isAiming)
             {
                 isAiming = false;
-                WeaponData.Instance.EndAiming(last_pos);
+                WeaponData.Instance.EndAiming(ships[0], last_pos);
             }
         }
     }
     void LateUpdate () {
-        UI_script.Instance.SetHealthShip(UI_script.ShipParent.Player, ship1);
-        UI_script.Instance.SetHealthShip(UI_script.ShipParent.Enemy, ship2);
+        UI_script.Instance.SetHealthShip(0, ships[0]);
+        UI_script.Instance.SetHealthShip(1, ships[1]);
     }
     //void FixedUpdate () {}
     private bool CustomRaycast(Ray _ray, out RaycastHit _rh, LayerMask _lm)
     {
         _rh = new RaycastHit();
         RaycastHit[] rh = Physics.RaycastAll(_ray, 100f, _lm);
-        int index = -1;
-        if (rh.Length > 0)
-            for (int i = 0; i < rh.Length; i++)
-            {
-                if (index < 0)
-                {
-                    index = i;
-                } else
-                {
-                    if (rh[i].distance < rh[index].distance)
-                        index = i;
-                }
-            }
-        if (index >= 0)
+        int index = 0;
+        if (rh.Length == 0)
+            return false;
+        if (rh.Length > 1)
         {
-            _rh = rh[index];
+            for (int i = 0; i < rh.Length; i++)
+                if (rh[i].distance < rh[index].distance) index = i;
+        }
+        else
+        {
+            _rh = rh[0];
             return true;
         }
-        return false;
+            _rh = rh[index];
+            return true;
     }
 
     public void ImageDown(int value)

@@ -11,10 +11,11 @@ public class Ship : MonoBehaviour{
     private Quaternion newRotation = Quaternion.identity;
     private float timer = 0f;
 
-    void Start()
+    public void InitShip()
     {
         data.tr_ship = transform.parent;
         data.tr_cannon = transform.GetChild(0);
+        data.InitShipData();
         timer = Random.Range(0f, data.timeToChange);
         if (forToriTest)
         {

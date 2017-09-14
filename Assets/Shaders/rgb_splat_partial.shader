@@ -47,7 +47,7 @@ Shader "Custom/RGB_splat_partial" {
 			}
 			float4 MyFragmentProgram (Interpolators i) : SV_TARGET {
 				float4 splat = tex2D(_SkinTex, i.uvSplat);
-				float4 tex = tex2D(_MainTex, i.uv);
+				float3 tex = tex2D(_MainTex, i.uv);
 				float4 color = float4(tex.rgb * (1 - splat.r - splat.g - splat.b) +
 					lerp (tex.rgb, _MainColor.rgb, _MainColor.a) * splat.r +
 					lerp (tex.rgb, _AddColor.rgb, _AddColor.a) * splat.g +
