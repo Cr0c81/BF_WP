@@ -87,11 +87,9 @@
     <Compile Include="Assets\Scripts\_CustomInput.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Shaders\Light_vertex_blended.shader" />
-    <None Include="Assets\Shaders\VertexLit_blended.shader" />
-    <None Include="Assets\Shaders\rgb_splat.shader" />
+    <None Include="Assets\Shaders\mobile\Custom_Mobile_AlphaSelfIllum.shader" />
+    <None Include="Assets\Shaders\mobile\Custom_Unlit_Tinted_Alpha_Blend.shader" />
     <None Include="Assets\Shaders\rgb_splat_partial.shader" />
-    <None Include="Assets\Shaders\rgb_splat_partial_2mask.shader" />
     <None Include="Assets\Shaders\water_simple\WaterBlended.shader" />
     <None Include="Assets\Shaders\water_simple\WaterBlendedSpecular.shader" />
     <None Include="Assets\Shaders\water_simple\WaterSimple.shader" />

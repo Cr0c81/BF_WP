@@ -236,7 +236,10 @@ public class WeaponData : MonoBehaviour {
                     go.transform.position = _sd.tr_cannon.position;
                     go.GetComponent<Bullet>().ammoID = cannons[_sd.cannonID].ammoType;
                     float dist = (_pos - cannon).magnitude;
-                    go.GetComponent<Bullet>().SetParams((_pos - cannon), dist, dist/ammos[cannons[_sd.cannonID].ammoType].velocity, 4f, _sd.tr_ship.parent); // а здесь всё нужно
+                    Vector3 dir = (_pos - cannon);
+                    dir.y = 0f;
+                    dir.Normalize();
+                    go.GetComponent<Bullet>().SetParams(dir, dist, ammos[cannons[_sd.cannonID].ammoType].velocity, 2f, _sd.tr_ship.parent); // а здесь всё нужно
                     _sd.ReloadCannon();
                     break;
                 }
