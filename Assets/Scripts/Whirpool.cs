@@ -36,7 +36,7 @@ public class Whirpool : MonoBehaviour {
     // ссылка на контроллер ввода
     private _CustomInput input;
 
-#region постоянный сдвиг UV текстуры воды
+    #region постоянный сдвиг UV текстуры воды
     [Header("Ссылки и настройки сдвига UV фона")]
     public Renderer rend_water;
     [Tooltip("Направление сдвига")]
@@ -53,7 +53,7 @@ public class Whirpool : MonoBehaviour {
     }
     #endregion
 
-#region вращение фона (океана)
+    #region вращение фона (океана)
     [Header("Анимация фона")]
     public Transform tr_water;
     [Tooltip("Скорость вращения")]
@@ -62,7 +62,7 @@ public class Whirpool : MonoBehaviour {
     {
         tr_water.Rotate(Vector3.up, water_speed * Time.deltaTime, Space.World);
     }
-#endregion
+    #endregion
 
     void Awake()
     {
@@ -95,6 +95,16 @@ public class Whirpool : MonoBehaviour {
         Instance = this;
     }
 
+    private bool CursorOverUI()
+{ 
+#if UNITY_ANDROID || UNITY_IOS
+        int cursorID = Input.GetTouch(0).fingerId;
+        return EventSystem.current.IsPointerOverGameObject(cursorID);
+#else
+        return EventSystem.current.IsPointerOverGameObject();
+#endif
+    }
+
     void Update () {
         //WaterShift();
         //WaterRotate();
@@ -119,9 +129,10 @@ public class Whirpool : MonoBehaviour {
         tr_ships[0].Rotate(Vector3.up, (speed_whirpool - ships[0].speed + player_move) * Time.deltaTime, Space.World);
         tr_ships[1].Rotate(Vector3.up, (speed_whirpool - ships[1].speed) * Time.deltaTime, Space.World);
 
+
         if (ship_move == Enum_control.none)
         {
-            if ( input.isClick && !(ships[0].cannonReload || ships[0].cannonSwitch) && !EventSystem.current.IsPointerOverGameObject() /* */)
+            if ( input.isClick && !(ships[0].cannonReload || ships[0].cannonSwitch) && !CursorOverUI() /* */)
                 
             {
                 if (!isAiming)
