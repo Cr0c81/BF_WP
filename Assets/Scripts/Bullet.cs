@@ -37,6 +37,7 @@ public class Bullet : MonoBehaviour {
         time = dist / speed; // рассчитываем время полета
         direction = _direction * dist; // расстояние приземления снаряда
         height = _height;
+        parent = _parent;
     }
 
 	//void OnCollisionEnter(Collision __collision) {}

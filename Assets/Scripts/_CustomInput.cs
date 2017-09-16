@@ -26,7 +26,9 @@ public class _CustomInput : MonoBehaviour {
         get
         {
 #if UNITY_ANDROID || UNITY_IOS
-            bool tm =  (Input.touchCount > 0 ? (Input.touches[0].phase != TouchPhase.Ended || Input.touches[0].phase != TouchPhase.Canceled) : false );
+            bool tm =  (Input.touchCount > 0 ? (Input.touches[0].phase == TouchPhase.Moved || 
+                                                Input.touches[0].phase == TouchPhase.Stationary || 
+                                                Input.touches[0].phase == TouchPhase.Began) : false );
             cursorPos = tm ? Input.GetTouch(0).position : -Vector2.one;
             return tm;
 #else
