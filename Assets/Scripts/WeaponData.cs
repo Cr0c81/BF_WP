@@ -40,7 +40,7 @@ public class CannonItem
 [System.Serializable]
 public class AmmoItem
 {
-    [Tooltip("Название снаряда")]
+    [Tooltip("Название")]
     public string name = "defaul_ammo";
     [Tooltip("Дамаг снаряда")]
     public float damage = 1f;
@@ -105,13 +105,13 @@ public class WeaponData : MonoBehaviour {
     public void StartAiming(ShipData _sd, Vector3 _pos)
     {
         timer = 0f;
-        switch (cannons[_sd.cannonID].aimType)
+        switch (_sd.cannon.aimType)
         {
             case AimType.Cannon:
             {
                 _sd.aim_left.enabled = true;
                 _sd.aim_right.enabled = true;
-                _sd.aim_left.fillAmount = cannons[_sd.cannonID].maxAim;
+                _sd.aim_left.fillAmount = _sd.cannon.maxAim;
                 _sd.aim_right.fillAmount = _sd.aim_left.fillAmount;
                 _pos.y = _sd.tr_canvas_aim.position.y;
                 _sd.tr_canvas_aim.LookAt(_pos);
@@ -122,11 +122,11 @@ public class WeaponData : MonoBehaviour {
             {
                 _sd.tr_mortar_aim.position = _pos + new Vector3(0f, _sd.mortar_aim_overhead, 0f);
                 _sd.aim_mortar.enabled = true;
-                _sd.tr_mortar_aim.localScale = Vector3.one * cannons[_sd.cannonID].maxAim;
+                _sd.tr_mortar_aim.localScale = Vector3.one * _sd.cannon.maxAim;
                 break;
             }
         }
-        if (!cannons[_sd.cannonID].hasMaxAngle)
+        if (!_sd.cannon.hasMaxAngle)
         {
             _sd.aim_left.color = _sd.aim_color_end;
             _sd.aim_right.color = _sd.aim_left.color;
@@ -135,19 +135,19 @@ public class WeaponData : MonoBehaviour {
 
     public void ProcessAiming(ShipData _sd, Vector3 _pos)
     {
-        timer = Mathf.Clamp(timer + Time.deltaTime, 0f, cannons[_sd.cannonID].aimTime);
+        timer = Mathf.Clamp(timer + Time.deltaTime, 0f, _sd.cannon.aimTime);
         
-        switch (cannons[_sd.cannonID].aimType)
+        switch (_sd.cannon.aimType)
         {
             case AimType.Cannon:
             {
-                if (cannons[_sd.cannonID].hasMaxAngle)
+                if (_sd.cannon.hasMaxAngle)
                 {
-                    _sd.aim_left.fillAmount = Mathf.Lerp(cannons[_sd.cannonID].maxAim, cannons[_sd.cannonID].minAim, (timer / cannons[_sd.cannonID].aimTime));
+                    _sd.aim_left.fillAmount = Mathf.Lerp(_sd.cannon.maxAim, _sd.cannon.minAim, (timer / _sd.cannon.aimTime));
                     _sd.aim_right.fillAmount = _sd.aim_left.fillAmount;
                 }
                 _pos.y = _sd.tr_canvas_aim.position.y;
-                if (cannons[_sd.cannonID].isTrackable)
+                if (_sd.cannon.isTrackable)
                 {
                      _sd.tr_canvas_aim.LookAt(_pos);
                 }
@@ -155,25 +155,25 @@ public class WeaponData : MonoBehaviour {
                 {
                      _sd.tr_canvas_aim.LookAt(aim_point);
                 }
-                if (cannons[_sd.cannonID].hasMaxAngle)
+                if (_sd.cannon.hasMaxAngle)
                 {
                      _sd.aim_left.color = Color.Lerp(_sd.aim_color_end, _sd.aim_color_start,
-                        (_sd.aim_left.fillAmount - cannons[_sd.cannonID].minAim) / (cannons[_sd.cannonID].maxAim - cannons[_sd.cannonID].minAim));
+                        (_sd.aim_left.fillAmount - _sd.cannon.minAim) / (_sd.cannon.maxAim - _sd.cannon.minAim));
                      _sd.aim_right.color = _sd.aim_left.color;
                 }
                 break;
             }
             case AimType.Mortar:
             {
-                if (cannons[_sd.cannonID].hasMaxAngle)
+                if (_sd.cannon.hasMaxAngle)
                 {
-                    if (cannons[_sd.cannonID].hasMaxAngle)
+                    if (_sd.cannon.hasMaxAngle)
                     {
-                        _sd.tr_mortar_aim.localScale = Mathf.Lerp(cannons[_sd.cannonID].maxAim, cannons[_sd.cannonID].minAim, (timer / cannons[_sd.cannonID].aimTime)) * Vector3.one;
-                        _sd.aim_mortar.color = Color.Lerp(_sd.aim_color_start, _sd.aim_color_end, timer / cannons[_sd.cannonID].aimTime);
+                        _sd.tr_mortar_aim.localScale = Mathf.Lerp(_sd.cannon.maxAim, _sd.cannon.minAim, (timer / _sd.cannon.aimTime)) * Vector3.one;
+                        _sd.aim_mortar.color = Color.Lerp(_sd.aim_color_start, _sd.aim_color_end, timer / _sd.cannon.aimTime);
                     }
                 }
-                if (cannons[_sd.cannonID].isTrackable)
+                if (_sd.cannon.isTrackable)
                     {
                         _sd.tr_mortar_aim.position = _pos + new Vector3(0f, _sd.mortar_aim_overhead, 0f);
                     }
@@ -189,23 +189,29 @@ public class WeaponData : MonoBehaviour {
     public void EndAiming(ShipData _sd, Vector3 _pos)
     {
         float aim_value = 0f;
-        switch (cannons[_sd.cannonID].aimType)
+        Vector3 pos;
+        switch (_sd.cannon.aimType)
         {
             case AimType.Cannon:
             {
                 _sd.aim_left.enabled = debug_aim;
                 _sd.aim_right.enabled = debug_aim;
                 aim_value = _sd.aim_right.fillAmount * 360f;
+                pos = _pos;
                 break;
             }
             case AimType.Mortar:
             {
                  _sd.aim_mortar.enabled = debug_aim;
-                aim_value = _sd.tr_mortar_aim.localScale.x;
+                aim_value = _sd.tr_mortar_aim.localScale.x / 2f;
+                pos = _pos + (Vector3) Random.insideUnitCircle * aim_value;
                 break;
             }
+            default:
+                pos = _pos;
+                break;
         }
-        DamnShootEm(_sd, _pos, aim_value);
+        DamnShootEm(_sd, pos, aim_value);
     }
 
     public void DamnShootEm(ShipData _sd, Vector3 _pos, float _aim_value)
@@ -213,7 +219,7 @@ public class WeaponData : MonoBehaviour {
         Vector3 cannon = _sd.tr_cannon.position;
         Vector3 cannon_dir =_sd.tr_cannon.forward;
 
-        switch (cannons[_sd.cannonID].anima)
+        switch (_sd.cannon.anima)
         {
             case ShootAnimation.Linear:
                 {
@@ -224,8 +230,8 @@ public class WeaponData : MonoBehaviour {
                     dir.Normalize();
                     go.transform.forward = dir;
                     go.transform.Rotate(Vector3.up, Random.Range(-_aim_value/2f, _aim_value), Space.World);
-                    go.GetComponent<Rigidbody>().velocity = go.transform.forward * ammos[cannons[_sd.cannonID].ammoType].velocity;
-                    go.GetComponent<Bullet>().ammoID = cannons[_sd.cannonID].ammoType;
+                    go.GetComponent<Rigidbody>().velocity = go.transform.forward * _sd.ammo.velocity;
+                    go.GetComponent<Bullet>().ammoID = _sd.cannon.ammoType;
                     go.GetComponent<Bullet>().SetParams(Vector3.zero, 0f, 0f, 0f, _sd.tr_ship.parent); // здесь только парент нужен
                     _sd.ReloadCannon();
                     break;
@@ -234,20 +240,20 @@ public class WeaponData : MonoBehaviour {
                 {
                     GameObject go = (GameObject)Instantiate(bullet, cannon, Quaternion.identity);
                     go.transform.position = _sd.tr_cannon.position;
-                    go.GetComponent<Bullet>().ammoID = cannons[_sd.cannonID].ammoType;
+                    go.GetComponent<Bullet>().ammoID = _sd.cannon.ammoType;
                     float dist = (_pos - cannon).magnitude;
                     Vector3 dir = (_pos - cannon);
                     dir.y = 0f;
                     dir.Normalize();
-                    go.GetComponent<Bullet>().SetParams(dir, dist, ammos[cannons[_sd.cannonID].ammoType].velocity, 2f, _sd.tr_ship.parent); // а здесь всё нужно
+                    go.GetComponent<Bullet>().SetParams(dir, dist, _sd.ammo.velocity, 2f, _sd.tr_ship.parent); // а здесь всё нужно
                     _sd.ReloadCannon();
                     break;
                 }
             case ShootAnimation.Momental:
                 {
-                    //Whirpool.Instance.ship2.SetDamage(cannons[_sd.cannonID].ammoType);
+                    //Whirpool.Instance.ship2.SetDamage(_sd.cannon.ammoType);
                     foreach (ShipData s in Whirpool.Instance.ships)
-                        if (s != _sd) s.SetDamage(cannons[_sd.cannonID].ammoType);
+                        if (s != _sd) s.SetDamage(_sd.cannon.ammoType);
                     _sd.ReloadCannon();
                     break;
                 }

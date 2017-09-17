@@ -44,7 +44,16 @@ public class Bullet : MonoBehaviour {
 	void OnTriggerEnter(Collider _col)
     {
         if (_col.transform != parent && !_col.CompareTag("water"))
+        {
             _col.gameObject.GetComponent<Ship>().data.SetDamage(ammoID);
+            if (_col.gameObject.GetComponent<Ship>().data.health_body < 0)
+            {
+                if (_col.gameObject.GetComponent<Ship>().data.playerControlled)
+                    { UI_script.Instance.ShowVictoryScreen(); }
+                else
+                    { UI_script.Instance.ShowLoseScreen(); }
+            }
+        }
         Destroy(this.gameObject);
         // запускаем анимашку взрыва
         //
@@ -60,7 +69,6 @@ public class Bullet : MonoBehaviour {
         startPos = transform.position;
         rb = GetComponent<Rigidbody>();
         tr_shadow = transform.GetChild(0);
-        //transform.GetChild(0).parent = null;
     }
 	void Update ()
     {
@@ -90,6 +98,5 @@ public class Bullet : MonoBehaviour {
     private void OnBecameInvisible()
     {
         Destroy(this.gameObject);
-        //Destroy(tr_shadow.gameObject);
     }
 }

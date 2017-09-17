@@ -40,7 +40,39 @@ public class UI_script : MonoBehaviour {
 // ссылка на себя, типа как синглтон, но это чтобы не искать его в других скриптах
 public static UI_script Instance { get; private set; }
 
-#region панели здоровья
+    private Whirpool wp;
+
+    #region Конец боя
+    public GameObject canvas_Victory;
+    public GameObject canvas_Lose;
+
+    public void ShowVictoryScreen()
+    {
+        Whirpool.pause = true;
+        canvas_Victory.SetActive(true);
+    }
+
+    public void ShowLoseScreen()
+    {
+        Whirpool.pause = true;
+        canvas_Lose.SetActive(true);
+    }
+
+    public void RestartGame()
+    {
+        wp.ships[0].tr_center.rotation = new Quaternion(0f, 0f, 0f, 0f);
+        wp.ships[1].tr_center.rotation = new Quaternion(0f, 0f, 0f, 0f);
+        wp.ships[1].tr_center.Rotate(Vector3.up, 180f, Space.World);
+        wp.ships[0].ResetAllHealth();
+        wp.ships[1].ResetAllHealth();
+        Whirpool.pause = false;
+        canvas_Lose.SetActive(false);
+        canvas_Victory.SetActive(false);
+    }
+
+    #endregion
+
+    #region панели здоровья
     [Header("Панели здоровья кораблей")]
     public Panel_health_config[] panel_health;
     public Transform canvas_panel_holder;
@@ -56,10 +88,15 @@ public static UI_script Instance { get; private set; }
         Team = 1,
         Control = 2
     }
+    /// <summary>
+    /// Вывод здоровья на панель
+    /// </summary>
+    /// <param name="index">Индекс панели</param>
+    /// <param name="sd">Ссылка на данные корабля</param>
     public void SetHealthShip(int index, ShipData sd)
     {
         panel_health[index].img_reload.fillAmount = sd.cannonReloadTimer / sd.maxReloadTime;
-        panel_health[index].img_body.fillAmount = sd.health_body / sd.health_body_max;
+        panel_health[index].img_body.fillAmount = Mathf.Clamp(sd.health_body / sd.health_body_max, 0f, 1f);
         panel_health[index].img_team.fillAmount = sd.health_team / sd.health_team_max;
         panel_health[index].img_ctrl.fillAmount = sd.health_control / sd.health_control_max;
     }
@@ -81,7 +118,7 @@ public static UI_script Instance { get; private set; }
     }
     #endregion
 
-#region выбор оружия
+    #region выбор оружия
     [Header("Выбор оружия")]
     public Weapon_config_class weapon_config;
     private int old_wpn = -1;
@@ -119,24 +156,28 @@ public static UI_script Instance { get; private set; }
                 }
         }
         old_wpn = value;
-        Whirpool.Instance.ships[0].cannonID = value;
-        Whirpool.Instance.ships[0].SwitchCannon(value);
+        //Whirpool.Instance.ships[0].cannonID = value;
+        //Whirpool.Instance.ships[0].SwitchCannon(value);
+        Whirpool.Instance.ships[0].SwitchCannon(WeaponData.Instance.cannons[value], null);
         Whirpool.Instance.ships[0].ReloadCannon();
     }
 
 #endregion
 
-#region методы монобеха
+    #region методы монобеха
     void Update()
     {
         panel_health[0].panel_ship.position = Camera.main.WorldToScreenPoint(panel_health[0].ship_UI.position);
         panel_health[1].panel_ship.position = Camera.main.WorldToScreenPoint(panel_health[1].ship_UI.position);
+        if (!wp)
+            wp = Whirpool.Instance;
     }
 
     void Start()
     {
         Instance = this;
         WeaponClick(0);
+        wp = Whirpool.Instance;
     }
     void Awake()
     {

@@ -2,13 +2,24 @@
 using UnityEngine.UI;
 
 [System.Serializable]
+public enum Enum_control
+{
+    none = 0,
+    accelerate = 1,
+    brake = 2
+}
+[System.Serializable]
 public class ShipData {
 
     public bool playerControlled = false;
+    [Tooltip("Минимальное расстояние до противника")]
+    public float minDistance = 1f;
     [Header("Скорость")]
     [Tooltip("Замедление от скорости водоворота")]
     public float speed = -5f;
+    [Tooltip("Ускорение")]
     public float accelerate = 10f;
+    [Tooltip("Замедление")]
     public float brake = 15f;
     [Header("Максимальные значения")]
     public float health_body_max = 100f;
@@ -19,15 +30,14 @@ public class ShipData {
     public float health_team = 100f;
     public float health_control = 100f;
 
+#region Оружие
     [Header("Оружейка")]
-    [Tooltip("Трансформ корабля")]
-    public Transform tr_ship;
-    [Tooltip("Трансформ корабля")]
-    public Transform UI_ship;
-    [Tooltip("Трансформ пушки")]
-    public Transform tr_cannon;
     [Tooltip("ID пушки")]
     public int cannonID;
+    [Tooltip("Ссылка на снаряд")]
+    public AmmoItem ammo = null;
+    [Tooltip("Ссылка на пушку")]
+    public CannonItem cannon = null;
     [Tooltip("Флаг перезарядки")]
     public bool cannonReload = true;
     [Tooltip("Флаг переключения")]
@@ -65,15 +75,27 @@ public class ShipData {
     public bool canRotate = true;
     [Tooltip("Скорость вращения прицела")]
     public float rotateSpeed = 30f;
+    #endregion
 
-    [Header("Данные для качки")]
-    [Tooltip("Время смены наклона")]
-    public float timeToChange = 1f;
-    [Tooltip("Угол наклона крен")]
-    public float maxAngleX = 15f;
+    [Space(10)]
+    [Tooltip("Трансформ корабля")]
+    public Transform tr_ship;
+    [Tooltip("Трансформ метки для UI")]
+    public Transform UI_ship;
+    [Tooltip("Трансформ пушки")]
+    public Transform tr_cannon;
+    [Tooltip("Трансформ центра вращения")]
+    public Transform tr_center;
+    [Tooltip("Енум управления газ/тормоз/ничего")]
+    public Enum_control ship_move = Enum_control.none;
 
-    public void InitShipData()
+    private Whirpool wp;
+
+    public void InitShipData(Transform _parent)
     {
+        tr_ship = _parent.parent;
+        tr_center = tr_ship.parent;
+        tr_cannon = tr_ship.GetChild(1).GetChild(0);
         UI_ship = tr_ship.GetChild(0);
         Transform t = tr_ship.parent;
         tr_canvas_aim = t.GetChild(0);
@@ -87,6 +109,22 @@ public class ShipData {
 
         aim_left.enabled = false;
         aim_right.enabled = false;
+
+        wp = Whirpool.Instance;
+    }
+
+    public void MoveShip()
+    {
+        float player_move = 0f;
+        if (ship_move == Enum_control.accelerate) player_move = accelerate;
+        if (ship_move == Enum_control.brake) player_move = -brake;
+        tr_center.Rotate(Vector3.up, (wp.speed_whirpool - speed + player_move) * Time.deltaTime, Space.World);
+        if (ship_move != Enum_control.none)
+        {
+            float range = wp.DistanceBetweenShips();
+            if (range < minDistance)
+                tr_center.Rotate(Vector3.up, -player_move * Time.deltaTime, Space.World);
+        }
     }
 
     public void ReloadCannon()
@@ -98,12 +136,18 @@ public class ShipData {
 
     public void SwitchCannon(int id)
     {
-        cannonSwitch = true;
-        cannonSwitchTimer = 0f;
-        maxSwitchTime = WeaponData.Instance.cannons[cannonID].switchTime;
+        SwitchCannon(WeaponData.Instance.cannons[id], null);
     }
 
-    // == >= <= != 
+    public void SwitchCannon(CannonItem ci, AmmoItem ai)
+    {
+        cannonSwitch = true;
+        cannonSwitchTimer = 0f;
+        maxSwitchTime = ci.switchTime;
+        cannon = ci;
+        ammo = WeaponData.Instance.ammos[ci.ammoType];
+    }
+
     public void ProcessTimers(float t)
     {
         if (cannonReload && !cannonSwitch)
@@ -137,10 +181,16 @@ public class ShipData {
         }
         if (!isMiss)
         {
-            health_body = Mathf.Clamp(health_body - base_dmg, 0f, health_body_max);
+            health_body = health_body - base_dmg;
             health_team = Mathf.Clamp(health_team - team_dmg, 0f, health_team_max);
             health_control = Mathf.Clamp(health_control - ctrl_dmg, 0f, health_control_max);
         }
     }
 
+    public void ResetAllHealth()
+    {
+        health_body = health_body_max;
+        health_control = health_control_max;
+        health_team = health_team_max;
+    }
 }
