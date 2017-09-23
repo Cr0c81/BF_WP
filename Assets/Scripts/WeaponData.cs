@@ -54,6 +54,8 @@ public class AmmoItem
     public float missChance = 15f;
     [Tooltip("Скорость полёта")]
     public float velocity = 5f;
+    [Tooltip("Префаб снаряда")]
+    public GameObject prefab;
 }
 
 [System.Serializable]
@@ -96,9 +98,6 @@ public class WeaponData : MonoBehaviour {
     public AmmoItem[] ammos;
 
     [Header("Разное")]
-    public GameObject bullet;
-
-
     private Vector3 aim_point;
     private float timer;
 
@@ -223,7 +222,7 @@ public class WeaponData : MonoBehaviour {
         {
             case ShootAnimation.Linear:
                 {
-                    GameObject go = (GameObject)Instantiate(bullet, cannon, Quaternion.identity);
+                    GameObject go = (GameObject)Instantiate(_sd.ammo.prefab, cannon, Quaternion.identity);
                     go.transform.position = _sd.tr_cannon.position;
                     Vector3 dir = _pos - _sd.tr_cannon.position;
                     dir.y = 0f;
@@ -231,16 +230,14 @@ public class WeaponData : MonoBehaviour {
                     go.transform.forward = dir;
                     go.transform.Rotate(Vector3.up, Random.Range(-_aim_value/2f, _aim_value), Space.World);
                     go.GetComponent<Rigidbody>().velocity = go.transform.forward * _sd.ammo.velocity;
-                    go.GetComponent<Bullet>().ammoID = _sd.cannon.ammoType;
                     go.GetComponent<Bullet>().SetParams(Vector3.zero, 0f, 0f, 0f, _sd.tr_ship.parent); // здесь только парент нужен
                     _sd.ReloadCannon();
                     break;
                 }
             case ShootAnimation.Ballistic:
                 {
-                    GameObject go = (GameObject)Instantiate(bullet, cannon, Quaternion.identity);
+                    GameObject go = (GameObject)Instantiate(_sd.ammo.prefab, cannon, Quaternion.identity);
                     go.transform.position = _sd.tr_cannon.position;
-                    go.GetComponent<Bullet>().ammoID = _sd.cannon.ammoType;
                     float dist = (_pos - cannon).magnitude;
                     Vector3 dir = (_pos - cannon);
                     dir.y = 0f;

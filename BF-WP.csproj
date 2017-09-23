@@ -79,6 +79,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Bullet.cs" />
+    <Compile Include="Assets\Scripts\CannonBullet.cs" />
+    <Compile Include="Assets\Scripts\MortarBullet.cs" />
     <Compile Include="Assets\Scripts\Ship.cs" />
     <Compile Include="Assets\Scripts\ShipData.cs" />
     <Compile Include="Assets\Scripts\UI_script.cs" />

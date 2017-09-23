@@ -80,8 +80,8 @@ public class Whirpool : MonoBehaviour {
     }
 
     private bool CursorOverUI()
-{ 
-#if UNITY_ANDROID || UNITY_IOS
+{
+#if (UNITY_ANDROID || UNITY_IOS) && (!UNITY_EDITOR)
         int cursorID = Input.GetTouch(0).fingerId;
         return EventSystem.current.IsPointerOverGameObject(cursorID);
 #else
