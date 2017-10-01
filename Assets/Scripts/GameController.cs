@@ -3,10 +3,10 @@ using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class Whirpool : MonoBehaviour {
+public class GameController : MonoBehaviour {
 
     // ссылка на себя, типа как синглтон, но это чтобы не искать его в других скриптах
-    public static Whirpool Instance { get; private set; }
+    public static GameController Instance { get; private set; }
     public static bool pause = false;
     [Header("Ссылки на водоворот")]
     public Transform tr_whirpool;
@@ -73,6 +73,8 @@ public class Whirpool : MonoBehaviour {
             ships[1] = t;
         }
         ui.InitPanels();
+        AudioController.Instance.SetFXVolume(0f);
+        AudioController.Instance.SetMusicVolume(0f);
     }
     void Start()
     {

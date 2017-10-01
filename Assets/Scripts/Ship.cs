@@ -37,7 +37,7 @@ public class Ship : MonoBehaviour{
 
     private void Update()
     {
-        if ( (canAnimateInPause) || ( !Whirpool.pause && !canAnimateInPause) )
+        if ( (canAnimateInPause) || ( !GameController.pause && !canAnimateInPause) )
             if (timer >= timeToChange)
             {
                 timer = 0f;

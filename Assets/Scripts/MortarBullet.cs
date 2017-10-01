@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class MortarBullet : Bullet {
 
-    private int ammoID = 1;
     private float timer = 0f;
     private float dist;
     private float speed;
@@ -22,8 +21,10 @@ public class MortarBullet : Bullet {
     private AnimationCurve trajectory;
 
     // Use this for initialization
-    void Start ()
+    override protected void Start ()
     {
+        ammoID = 1;
+        base.Start();
         startPos = transform.position;
         rb = GetComponent<Rigidbody>();
         tr_shadow = transform.GetChild(0);
@@ -55,21 +56,24 @@ public class MortarBullet : Bullet {
         float f1 = timer / time; // Коэфициент [0;1] положенияна траектории
         float f2 = trajectory.Evaluate(f1) * height; // расчёт высоты снаряда на траектории по аним кривой
         rb.MovePosition(startPos + new Vector3(0f, f2, 0f) + direction * f1); // двигаем через РБ
-        transform.Rotate(Vector3.right, rotateSpeed * Time.deltaTime, Space.Self);
+        tr_bullet.Rotate(Vector3.right, rotateSpeed * Time.deltaTime, Space.Self);
         tr_shadow.position = startPos + direction * f1; // двигаем через РБ тень снаряда
 
         timer += Time.deltaTime;
         if (timer > time)
-        {
-            Destroy(this.gameObject);
-            Destroy(tr_shadow.gameObject);
-        }
+            SelfDestroy();
     }
 
     void OnTriggerEnter(Collider _col)
     {
-        TriggerEnter(_col, ammoID);
+        TriggerEnter(_col, ai);
+        SelfDestroy();
     }
 
+    override protected void SelfDestroy()
+    {
+        Destroy(tr_shadow.gameObject);
+        Destroy(this.gameObject);
+    }
 }
 

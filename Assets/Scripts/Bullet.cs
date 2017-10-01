@@ -5,6 +5,8 @@ public class Bullet : MonoBehaviour {
 
     internal Transform parent;
     internal Vector3 startPos;
+    protected int ammoID = -1;
+    protected AmmoItem ai;
 
     /// <summary>
     /// Задание параметров снаряда
@@ -18,8 +20,12 @@ public class Bullet : MonoBehaviour {
     {
     }
 
-	//void OnCollisionEnter(Collision __collision) {}
-	protected void TriggerEnter(Collider _col, int _ammoID)
+    virtual protected void Start()
+    {
+        ai = WeaponData.Instance.ammos[ammoID];
+    }
+
+    protected void TriggerEnter(Collider _col, int _ammoID)
     {
         if (_col.transform != parent && !_col.CompareTag("water"))
         {
@@ -32,22 +38,33 @@ public class Bullet : MonoBehaviour {
                     { UI_script.Instance.ShowLoseScreen(); }
             }
         }
-        Destroy(this.gameObject);
-        // запускаем анимашку взрыва
-
     }
 
-	void FixedUpdate ()
+    protected void TriggerEnter(Collider _col, AmmoItem _ai)
     {
-        if (Vector3.SqrMagnitude(startPos - transform.position) > 400f)
+        if (_col.transform != parent && !_col.CompareTag("water"))
         {
-            Destroy(this.gameObject);
-            // запускаем анимашку взрыва
-            //
+            _col.gameObject.GetComponent<Ship>().data.SetDamage(_ai);
+            if (_col.gameObject.GetComponent<Ship>().data.health_body < 0)
+            {
+                if (_col.gameObject.GetComponent<Ship>().data.playerControlled)
+                { UI_script.Instance.ShowVictoryScreen(); }
+                else
+                { UI_script.Instance.ShowLoseScreen(); }
+            }
         }
     }
 
-    void OnBecameInvisible()
+    void FixedUpdate ()
+    {
+        if (Vector3.SqrMagnitude(startPos - transform.position) > 400f)
+        {
+            SelfDestroy();
+        }
+    }
+
+    // Для кастомизации самоуничтожения
+    virtual protected void SelfDestroy()
     {
         Destroy(this.gameObject);
     }

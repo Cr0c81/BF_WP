@@ -33,8 +33,8 @@ public class CannonItem
     public AimType aimType = AimType.Cannon;
     [Tooltip("Анимация полета")]
     public ShootAnimation anima = ShootAnimation.Linear;
-//    [Tooltip("")]
-//    [Tooltip("")]
+    [Tooltip("Звук выстрела")]
+    public AudioClip shootSound;
 }
 
 [System.Serializable]
@@ -56,6 +56,8 @@ public class AmmoItem
     public float velocity = 5f;
     [Tooltip("Префаб снаряда")]
     public GameObject prefab;
+    [Tooltip("Звук попадания")]
+    public AudioClip hitSound;
 }
 
 [System.Serializable]
@@ -215,6 +217,7 @@ public class WeaponData : MonoBehaviour {
 
     public void DamnShootEm(ShipData _sd, Vector3 _pos, float _aim_value)
     {
+        _sd.ShootSound();
         Vector3 cannon = _sd.tr_cannon.position;
         Vector3 cannon_dir =_sd.tr_cannon.forward;
 
@@ -248,8 +251,8 @@ public class WeaponData : MonoBehaviour {
                 }
             case ShootAnimation.Momental:
                 {
-                    //Whirpool.Instance.ship2.SetDamage(_sd.cannon.ammoType);
-                    foreach (ShipData s in Whirpool.Instance.ships)
+                    //GameController.Instance.ship2.SetDamage(_sd.cannon.ammoType);
+                    foreach (ShipData s in GameController.Instance.ships)
                         if (s != _sd) s.SetDamage(_sd.cannon.ammoType);
                     _sd.ReloadCannon();
                     break;

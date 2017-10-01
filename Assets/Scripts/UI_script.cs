@@ -40,7 +40,7 @@ public class UI_script : MonoBehaviour {
 // ссылка на себя, типа как синглтон, но это чтобы не искать его в других скриптах
 public static UI_script Instance { get; private set; }
 
-    private Whirpool wp;
+    private GameController wp;
 
     #region Конец боя
     public GameObject canvas_Victory;
@@ -48,13 +48,13 @@ public static UI_script Instance { get; private set; }
 
     public void ShowVictoryScreen()
     {
-        Whirpool.pause = true;
+        GameController.pause = true;
         canvas_Victory.SetActive(true);
     }
 
     public void ShowLoseScreen()
     {
-        Whirpool.pause = true;
+        GameController.pause = true;
         canvas_Lose.SetActive(true);
     }
 
@@ -65,7 +65,7 @@ public static UI_script Instance { get; private set; }
         wp.ships[1].tr_center.Rotate(Vector3.up, 180f, Space.World);
         wp.ships[0].ResetAllHealth();
         wp.ships[1].ResetAllHealth();
-        Whirpool.pause = false;
+        GameController.pause = false;
         canvas_Lose.SetActive(false);
         canvas_Victory.SetActive(false);
     }
@@ -103,13 +103,13 @@ public static UI_script Instance { get; private set; }
 
     public void InitPanels()
     {
-        panel_health = new Panel_health_config[Whirpool.Instance.ships.Length];
-        for (int i=0; i<Whirpool.Instance.ships.Length; i++)
+        panel_health = new Panel_health_config[GameController.Instance.ships.Length];
+        for (int i=0; i<GameController.Instance.ships.Length; i++)
         {
             GameObject go = Instantiate<GameObject>(prefab_panel, canvas_panel_holder);
             panel_health[i] = new Panel_health_config();
             panel_health[i].panel_ship = go.GetComponent< RectTransform>();
-            panel_health[i].ship_UI = Whirpool.Instance.ships[i].UI_ship;
+            panel_health[i].ship_UI = GameController.Instance.ships[i].UI_ship;
             panel_health[i].img_reload = go.transform.GetChild(0).GetComponent<Image>();
             panel_health[i].img_body = go.transform.GetChild(1).GetComponent<Image>();
             panel_health[i].img_team= go.transform.GetChild(2).GetComponent<Image>();
@@ -117,6 +117,42 @@ public static UI_script Instance { get; private set; }
         }
     }
     #endregion
+
+#region панели звука
+
+    public Sprite sprFXOn;
+    public Sprite sprFXOff;
+    public Sprite sprMusicOn;
+    public Sprite sprMusicOff;
+    public Image imgFX;
+    public Image imgMusic;
+
+    public void AudioToggleFX()
+    {
+        AudioController.Instance.ToggleFX();
+        if (AudioController.Instance.muteFX)
+            imgFX.sprite = sprFXOff;
+        else
+            imgFX.sprite = sprFXOn;
+    }
+    public void AudioToggleMusic()
+    {
+        AudioController.Instance.ToggleMusic();
+        if (AudioController.Instance.muteMusic)
+            imgMusic.sprite = sprMusicOff;
+        else
+            imgMusic.sprite = sprMusicOn;
+    }
+    public void AudioSetFXVolume(float value)
+    {
+        AudioController.Instance.SetFXVolume(value);
+    }
+    public void AudioSetMusicVolume(float value)
+    {
+        AudioController.Instance.SetMusicVolume(value);
+    }
+
+#endregion
 
     #region выбор оружия
     [Header("Выбор оружия")]
@@ -156,10 +192,10 @@ public static UI_script Instance { get; private set; }
                 }
         }
         old_wpn = value;
-        //Whirpool.Instance.ships[0].cannonID = value;
-        //Whirpool.Instance.ships[0].SwitchCannon(value);
-        Whirpool.Instance.ships[0].SwitchCannon(WeaponData.Instance.cannons[value], null);
-        Whirpool.Instance.ships[0].ReloadCannon();
+        //GameController.Instance.ships[0].cannonID = value;
+        //GameController.Instance.ships[0].SwitchCannon(value);
+        GameController.Instance.ships[0].SwitchCannon(WeaponData.Instance.cannons[value], null);
+        GameController.Instance.ships[0].ReloadCannon();
     }
 
 #endregion
@@ -170,14 +206,14 @@ public static UI_script Instance { get; private set; }
         panel_health[0].panel_ship.position = Camera.main.WorldToScreenPoint(panel_health[0].ship_UI.position);
         panel_health[1].panel_ship.position = Camera.main.WorldToScreenPoint(panel_health[1].ship_UI.position);
         if (!wp)
-            wp = Whirpool.Instance;
+            wp = GameController.Instance;
     }
 
     void Start()
     {
         Instance = this;
         WeaponClick(0);
-        wp = Whirpool.Instance;
+        wp = GameController.Instance;
     }
     void Awake()
     {

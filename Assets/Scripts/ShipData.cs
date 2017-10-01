@@ -88,12 +88,15 @@ public class ShipData {
     public Transform tr_center;
     [Tooltip("Енум управления газ/тормоз/ничего")]
     public Enum_control ship_move = Enum_control.none;
+    [SerializeField]
+    private AudioSource audioCannon;
 
-    private Whirpool wp;
+    private GameController wp;
 
     public void InitShipData(Transform _parent)
     {
         tr_ship = _parent.parent;
+        audioCannon = tr_ship.GetComponent<AudioSource>();
         tr_center = tr_ship.parent;
         tr_cannon = tr_ship.GetChild(1).GetChild(0);
         UI_ship = tr_ship.GetChild(0);
@@ -110,7 +113,7 @@ public class ShipData {
         aim_left.enabled = false;
         aim_right.enabled = false;
 
-        wp = Whirpool.Instance;
+        wp = GameController.Instance;
     }
 
     public void MoveShip()
@@ -146,6 +149,7 @@ public class ShipData {
         maxSwitchTime = ci.switchTime;
         cannon = ci;
         ammo = WeaponData.Instance.ammos[ci.ammoType];
+        audioCannon.clip = ci.shootSound;
     }
 
     public void ProcessTimers(float t)
@@ -164,23 +168,34 @@ public class ShipData {
         }
     }
 
+    public void ShootSound()
+    {
+        audioCannon.Play();
+    }
+
     public void SetDamage(int _ammoID)
     {
         AmmoItem ai = WeaponData.Instance.ammos[_ammoID];
-        float base_dmg = ai.damage * ai.target.body;
-        float team_dmg = ai.damage * ai.target.team;
-        float ctrl_dmg = ai.damage * ai.target.control;
-        bool isMiss = (Random.Range(0f, 1f) <= ai.missChance) ? true : false;
-        bool isCrit = (Random.Range(0f, 1f) <= ai.critChance) ? true : false;
+        SetDamage(ai);
+    }
+
+    public void SetDamage(AmmoItem _ammoID)
+    {
+        float base_dmg = _ammoID.damage * _ammoID.target.body;
+        float team_dmg = _ammoID.damage * _ammoID.target.team;
+        float ctrl_dmg = _ammoID.damage * _ammoID.target.control;
+        bool isMiss = (Random.Range(0f, 1f) <= _ammoID.missChance) ? true : false;
+        bool isCrit = (Random.Range(0f, 1f) <= _ammoID.critChance) ? true : false;
         if (isCrit)
         {
-            base_dmg *= ai.critMultiplier;
-            team_dmg *= ai.critMultiplier;
-            ctrl_dmg *= ai.critMultiplier;
+            base_dmg *= _ammoID.critMultiplier;
+            team_dmg *= _ammoID.critMultiplier;
+            ctrl_dmg *= _ammoID.critMultiplier;
             Debug.Log("Crit!");
         }
         if (!isMiss)
         {
+            AudioController.Instance.SetExplosionSound(tr_ship.position, _ammoID.hitSound);
             health_body = health_body - base_dmg;
             health_team = Mathf.Clamp(health_team - team_dmg, 0f, health_team_max);
             health_control = Mathf.Clamp(health_control - ctrl_dmg, 0f, health_control_max);

@@ -4,12 +4,24 @@ using UnityEngine;
 
 public class CannonBullet : Bullet {
 
-    private int ammoID = 0;
+    override protected void Start()
+    {
+        ammoID = 0;
+        base.Start();
+    }
 
     void OnTriggerEnter(Collider _col)
     {
-        TriggerEnter(_col, ammoID);
+        TriggerEnter(_col, ai);
+        SelfDestroy();
+    }
+
+    protected override void SelfDestroy()
+    {
+
+        Destroy(this.gameObject);
     }
 }
+
 
 
