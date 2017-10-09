@@ -66,8 +66,11 @@ public class MortarBullet : Bullet {
 
     void OnTriggerEnter(Collider _col)
     {
-        TriggerEnter(_col, ai);
-        SelfDestroy();
+        if (_col.transform != parent)
+        {
+            TriggerEnter(_col, ai);
+            SelfDestroy();
+        }
     }
 
     override protected void SelfDestroy()

@@ -233,7 +233,7 @@ public class WeaponData : MonoBehaviour {
                     go.transform.forward = dir;
                     go.transform.Rotate(Vector3.up, Random.Range(-_aim_value/2f, _aim_value), Space.World);
                     go.GetComponent<Rigidbody>().velocity = go.transform.forward * _sd.ammo.velocity;
-                    go.GetComponent<Bullet>().SetParams(Vector3.zero, 0f, 0f, 0f, _sd.tr_ship.parent); // здесь только парент нужен
+                    go.GetComponent<Bullet>().SetParams(Vector3.zero, 0f, 0f, 0f, _sd.tr_ship.GetChild(1)); // здесь только парент нужен
                     _sd.ReloadCannon();
                     break;
                 }
@@ -245,7 +245,7 @@ public class WeaponData : MonoBehaviour {
                     Vector3 dir = (_pos - cannon);
                     dir.y = 0f;
                     dir.Normalize();
-                    go.GetComponent<Bullet>().SetParams(dir, dist, _sd.ammo.velocity, 2f, _sd.tr_ship.parent); // а здесь всё нужно
+                    go.GetComponent<Bullet>().SetParams(dir, dist, _sd.ammo.velocity, 2f, _sd.tr_ship.GetChild(1)); // а здесь всё нужно
                     _sd.ReloadCannon();
                     break;
                 }

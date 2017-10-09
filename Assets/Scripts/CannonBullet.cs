@@ -12,8 +12,11 @@ public class CannonBullet : Bullet {
 
     void OnTriggerEnter(Collider _col)
     {
-        TriggerEnter(_col, ai);
-        SelfDestroy();
+        if (_col.transform != parent)
+        {
+            TriggerEnter(_col, ai);
+            SelfDestroy();
+        }
     }
 
     protected override void SelfDestroy()

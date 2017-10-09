@@ -18,6 +18,7 @@ public class Bullet : MonoBehaviour {
     /// <param name="_parent">Хозяин снаряда</param>
     public virtual void SetParams(Vector3 _direction, float _dist, float _speed, float _height, Transform _parent)
     {
+        parent = _parent;
     }
 
     virtual protected void Start()
@@ -27,17 +28,7 @@ public class Bullet : MonoBehaviour {
 
     protected void TriggerEnter(Collider _col, int _ammoID)
     {
-        if (_col.transform != parent && !_col.CompareTag("water"))
-        {
-            _col.gameObject.GetComponent<Ship>().data.SetDamage(_ammoID);
-            if (_col.gameObject.GetComponent<Ship>().data.health_body < 0)
-            {
-                if (_col.gameObject.GetComponent<Ship>().data.playerControlled)
-                    { UI_script.Instance.ShowVictoryScreen(); }
-                else
-                    { UI_script.Instance.ShowLoseScreen(); }
-            }
-        }
+        TriggerEnter(_col, WeaponData.Instance.ammos[_ammoID]);
     }
 
     protected void TriggerEnter(Collider _col, AmmoItem _ai)
